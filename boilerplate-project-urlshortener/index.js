@@ -26,15 +26,17 @@ app.get('/api/hello', function(req, res) {
 
 app.post('/api/shorturl', async (req, res)=>{
   let originalUrl = req.body.url
-  let url
-  if(url.startsWith("https://")) {url = originalUrl.slice(8)}
-  dns.lookup(url, (err)=>{
-    if(err == null){
-      links.push(url)
-      res.json({"original_url" : url, short_url : links.length})
+  let hostname
+  if(originalUrl.startsWith("https://")) {hostname = originalUrl.slice(8)}
+  else return
+  dns.lookup(hostname, (err, address)=>{
+    console.log(err)
+    if(err){
+      res.json({"error" : 'invalid url'})
     }
     else{
-      res.json({"error" : 'invalid url'})
+      links.push(originalUrl)
+      res.json({"original_url" : originalUrl, short_url : links.length})
     }
   })
 })
