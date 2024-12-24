@@ -4,7 +4,7 @@ const parser = require('body-parser')
 const cors = require('cors');
 const app = express();
 const links = []
-const dns = require('dns')
+const dns = require('dns');
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
@@ -28,15 +28,16 @@ app.post('/api/shorturl', async (req, res)=>{
   let originalUrl = req.body.url
   let hostname
   if(originalUrl.startsWith("https://")) {hostname = originalUrl.slice(8)}
-  else return
+  else {res.json({"error" : 'invalid url'}); return}
+  if(hostname.includes("/")){hostname = hostname.slice(0, hostname.indexOf("/"))}
   dns.lookup(hostname, (err, address)=>{
-    console.log(err)
     if(err){
+      console.log(err)
       res.json({"error" : 'invalid url'})
     }
     else{
       links.push(originalUrl)
-      res.json({"original_url" : originalUrl, short_url : links.length})
+      res.json({original_url : originalUrl, short_url : links.length})
     }
   })
 })
@@ -44,7 +45,7 @@ app.post('/api/shorturl', async (req, res)=>{
 app.get('/api/shorturl/:shortUrl?', (req, res)=>{
   const shortUrl = req.params.shortUrl
   if(links.length < Number(shortUrl)) return
-  res.redirect("https://" + links[Number(shortUrl) - 1])
+  res.redirect(links[Number(shortUrl) - 1])
 })
 
 app.listen(port, function() {
